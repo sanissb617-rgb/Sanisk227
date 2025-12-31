@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sk-abokai</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ece5dd; margin: 0; }
+        .header { background-color: #075e54; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .tabs { display: flex; background-color: #075e54; position: sticky; top: 60px; z-index: 100; }
+        .tabs button { flex: 1; padding: 12px; color: #b3d4d0; border: none; background: none; cursor: pointer; font-weight: bold; }
+        .tabs button.active { color: white; border-bottom: 3px solid white; }
+        .content { padding: 15px; display: none; }
+        .active-content { display: block; }
+        .auth-container { max-width: 350px; margin: 50px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button.main-btn { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .reg-btn { background-color: #25d366; color: white; }
+        .log-btn { background-color: #34b7f1; color: white; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+<div id="auth-page">
+    <div class="header"><h1>Sk-abokai</h1></div>
+    <div class="auth-container">
+        <h2 style="text-align:center; color:#075e54;">Rijista / Shiga</h2>
+        <input type="text" id="phone" placeholder="Lambar Waya (Misali: 080...)">
+        <input type="password" id="pass" placeholder="Kalmar Sirri (Haruffa 6+)">
+        <button class="main-btn reg-btn" onclick="startAuth('reg')">YIN RIJISTA</button>
+        <button class="main-btn log-btn" onclick="startAuth('log')">SHIGA (LOGIN)</button>
+    </div>
+</div>
+
+<div id="app-page" style="display:none;">
+    <div class="header"><h1>Sk-abokai</h1></div>
+    <div class="tabs">
+        <button id="btn-labarai" class="active" onclick="tab('labarai')">LABARAI</button>
+        <button id="btn-fira" onclick="tab('fira')">FIRA (GROUP)</button>
+        <button id="btn-aboki" onclick="tab('aboki')">ABOKI</button>
+    </div>
+
+    <div id="labarai" class="content active-content">
+        <div class="card"><h3>1. Tarihin Sk-abokai</h3><p>An kafa wannan kafa ne don hada zumunci tsakanin matasa.</p></div>
+        <div class="card"><h3>2. Sirrin Soyayya</h3><p>Yadda ake gane masoyi na gaskiya a duniyar yanar gizo.</p></div>
+        <div class="card"><h3>3. Labarin Barkwanci</h3><p>Wata rana wani aboki ya tafi fira, sai ya manta sunan budurwar sa...</p></div>
+        <div class="card"><h3>4. Duniyar Kimiyya</h3><p>Yadda wayar hannu take sauya rayuwar mu a yau.</p></div>
+        <div class="card"><h3>5. Nasara</h3><p>Kada ka taba karaya, nasara tana kusa da kai fiye da yadda kake tsammani.</p></div>
+    </div>
+
+    <div id="fira" class="content">
+        <div id="msg-box" style="height:300px; overflow-y:auto; background:#e5ddd5; padding:10px; border-radius:5px;"></div>
+        <input type="text" id="group-input" placeholder="Rubuta sako...">
+        <button class="main-btn reg-btn" onclick="sendMsg()">AIKA</button>
+    </div>
+
+    <div id="aboki" class="content">
+        <h3>Mutanen da ke ciki</h3>
+        <div id="users-list"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBdKV8-6-ZGqlEd992kBJkSSBrgSJGve8Y",
+  authDomain: "sani-sk.firebaseapp.com",
+  databaseURL: "https://sani-sk-default-rtdb.firebaseio.com",
+  projectId: "sani-sk",
+  storageBucket: "sani-sk.firebasestorage.app",
+  messagingSenderId: "811888329988",
+  appId: "1:811888329988:web:fc6a67cf841a542a1dbc51"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+function startAuth(mode) {
+    const phone = document.getElementById('phone').value;
+    const pass = document.getElementById('pass').value;
+    if(phone.length < 5) return alert("Saka lambar waya dai-dai");
+    
+    // Dabara: Mayar da lambar waya ta zama imel a boye
+    const fakeEmail = phone + "@sk-abokai.com";
+
+    if(mode === 'reg') {
+        auth.createUserWithEmailAndPassword(fakeEmail, pass)
+            .then(res => {
+                db.ref('users/' + res.user.uid).set({ phone: phone });
+                alert("An yi rijista!");
+            }).catch(e => alert(e.message));
+    } else {
+        auth.signInWithEmailAndPassword(fakeEmail, pass)
+            .then(() => {
+                document.getElementById('auth-page').style.display = 'none';
+                document.getElementById('app-page').style.display = 'block';
+                loadUsers();
+            }).catch(e => alert("Lamba ko kalmar sirri ba daidai ba"));
+    }
+}
+
+function tab(name) {
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active-content'));
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.getElementById(name).classList.add('active-content');
+    document.getElementById('btn-' + name).classList.add('active');
+}
+
+function loadUsers() {
+    db.ref('users').on('value', snap => {
+        let html = "";
+        snap.forEach(user => {
+            html += `<div class="card" onclick="alert('Zaka iya fira da ${user.val().phone} nan ba da jimawa ba!')">👤 ${user.val().phone}</div>`;
+        });
+        document.getElementById('users-list').innerHTML = html;
+    });
+}
+</script>
+</body>
+          </html>
+  
