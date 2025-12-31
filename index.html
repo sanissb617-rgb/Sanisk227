@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sk-abokai</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #ece5dd; margin: 0; }
+        .header { background-color: #075e54; color: white; padding: 15px; text-align: center; }
+        .tabs { display: flex; background-color: #075e54; }
+        .tabs button { flex: 1; padding: 10px; color: white; border: none; background: none; cursor: pointer; }
+        .tabs button:hover { background-color: #128c7e; }
+        .content { padding: 20px; }
+        .auth-form { display: flex; flex-direction: column; max-width: 300px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; }
+        input { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #25d366; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="header"><h1>Sk-abokai</h1></div>
+
+<div id="auth-section" class="auth-form">
+    <h3>Shiga ko Yin Rajista</h3>
+    <input type="text" id="user-identifier" placeholder="Gmail ko Lambar Waya">
+    <input type="password" id="user-pass" placeholder="Kalmar Sirri">
+    <button onclick="handleAuth('login')">Shiga (Login)</button>
+    <p style="text-align:center">Ko</p>
+    <button onclick="handleAuth('register')" style="background-color: #34b7f1;">Yi Rajista</button>
+</div>
+
+<div id="main-app" style="display:none;">
+    <div class="tabs">
+        <button onclick="showSection('labarai')">Labarai</button>
+        <button onclick="showSection('fira')">Fira (Group)</button>
+        <button onclick="showSection('aboki')">Aboki (Sirri)</button>
+    </div>
+
+    <div id="labarai" class="content">
+        <h2>Labarai Masu Daɗi</h2>
+        <ul>
+            <li>Tarihin kafuwar Sk-abokai da nasarorin sa.</li>
+            <li>Yadda ake samun abokai na gari a yanar gizo.</li>
+            <li>Sirrin nishadi da barkwanci a tsakanin matasa.</li>
+            <li>Labarin soyayya mai ratsa zuciya: Zaki da Maryam.</li>
+            <li>Hanyoyin inganta zumunci ta hanyar fira.</li>
+        </ul>
+    </div>
+
+    <div id="fira" class="content" style="display:none;">
+        <h2>Fira ta Jama'a (Group)</h2>
+        <div id="group-chat" style="height: 300px; background: white; border-radius: 5px; padding: 10px; overflow-y: scroll; margin-bottom: 10px;">
+            </div>
+        <input type="text" id="group-input" placeholder="Rubuta sakon group..." style="width: 70%;">
+        <button onclick="sendMsg('group')">Aika</button>
+    </div>
+
+    <div id="aboki" class="content" style="display:none;">
+        <h2>Jerin Abokai</h2>
+        <div id="friends-list">
+            <p>Loading abokai...</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+    // Amfani da bayanan da ka bayar a hoto
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdKV8-6-ZGqlEd992kBJkSSBrgSJGve8Y",
+      authDomain: "sani-sk.firebaseapp.com",
+      databaseURL: "https://sani-sk-default-rtdb.firebaseio.com",
+      projectId: "sani-sk",
+      storageBucket: "sani-sk.firebasestorage.app",
+      messagingSenderId: "811888329988",
+      appId: "1:811888329988:web:fc6a67cf841a542a1dbc51"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    function showSection(id) {
+        ['labarai', 'fira', 'aboki'].forEach(s => document.getElementById(s).style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function handleAuth(type) {
+        const iden = document.getElementById('user-identifier').value;
+        const pass = document.getElementById('user-pass').value;
+        
+        if(type === 'register') {
+            auth.createUserWithEmailAndPassword(iden, pass)
+                .then(() => alert("An yi rajista!"))
+                .catch(e => alert(e.message));
+        } else {
+            auth.signInWithEmailAndPassword(iden, pass)
+                .then(() => {
+                    document.getElementById('auth-section').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                })
+                .catch(e => alert(e.message));
+        }
+    }
+</script>
+</body>
+      </html>
+                                                 
